@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculo de Elasticidad</title>
+    <script>
+        function calcularElasticidad() {
+            // Obtener los valores de los campos de entrada
+            const distanciaCm = parseFloat(document.getElementById('distanciaCm').value);
+            const pesoKg = parseFloat(document.getElementById('pesoKg').value);
+
+            // Convertir la distancia a metros y el peso a Newtons
+            const distanciaM = distanciaCm / 100;
+            const pesoN = pesoKg * 9.81;
+
+            // Calcular la elasticidad
+            const elasticidad = pesoN / distanciaM;
+
+            // Mostrar los resultados
+            document.getElementById('distanciaM').innerText = distanciaM.toFixed(2);
+            document.getElementById('pesoN').innerText = pesoN.toFixed(2);
+            document.getElementById('elasticidad').innerText = elasticidad.toFixed(2);
+
+            // Generar la tabla de homologación
+            const tablaHomologacion = document.getElementById('tablaHomologacion');
+            tablaHomologacion.innerHTML = '';
+            for (let i = 5; i <= 60; i += 5) {
+                const fuerzaN = elasticidad * (i / 100);
+                const pesoEquivalenteKg = fuerzaN / 9.81;
+                const fila = `<tr>
+                    <td>${i} cm</td>
+                    <td>${fuerzaN.toFixed(2)} N</td>
+                    <td>${pesoEquivalenteKg.toFixed(2)} kg</td>
+                </tr>`;
+                tablaHomologacion.innerHTML += fila;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Calculo de Elasticidad</h1>
+    <form onsubmit="event.preventDefault(); calcularElasticidad();">
+        <label for="distanciaCm">Distancia de deformación (cm):</label>
+        <input type="number" id="distanciaCm" required>
+        <br>
+        <label for="pesoKg">Peso medido (kg):</label>
+        <input type="number" id="pesoKg" required>
+        <br>
+        <button type="submit">Calcular</button>
+    </form>
+    <h2>Resultados</h2>
+    <p>Distancia en metros: <span id="distanciaM"></span></p>
+    <p>Peso en Newtons: <span id="pesoN"></span></p>
+    <p>Elasticidad (N/m): <span id="elasticidad"></span></p>
+    <h2>Tabla de Homologación</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Distancia (cm)</th>
+                <th>Fuerza (N)</th>
+                <th>Peso equivalente (kg)</th>
+            </tr>
+        </thead>
+        <tbody id="tablaHomologacion">
+            <!-- Aquí se insertarán las filas de la tabla -->
+        </tbody>
+    </table>
+</body>
+</html>
