@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculo de Elasticidad</title>
+    <title>Calculo de Elasticidad y Resistencia</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        let elasticidad;
+
         function calcularElasticidad() {
             // Obtener los valores de los campos de entrada
             const distanciaCm = parseFloat(document.getElementById('distanciaCm').value);
@@ -15,7 +18,7 @@
             const pesoN = pesoKg * 9.81;
 
             // Calcular la elasticidad
-            const elasticidad = pesoN / distanciaM;
+            elasticidad = pesoN / distanciaM;
 
             // Mostrar los resultados
             document.getElementById('distanciaM').innerText = distanciaM.toFixed(2);
@@ -36,10 +39,65 @@
                 tablaHomologacion.innerHTML += fila;
             }
         }
+
+        function calcularTrabajo() {
+            // Obtener los valores de los campos de entrada
+            const distanciaTrabajoCm = parseFloat(document.getElementById('distanciaTrabajoCm').value);
+            const repeticiones = parseInt(document.getElementById('repeticiones').value);
+
+            // Generar el gráfico de resistencia por deformación
+            const labels = [];
+            const datosFuerza = [];
+            for (let i = 0; i <= distanciaTrabajoCm; i++) {
+                labels.push(`${i} cm`);
+                datosFuerza.push((elasticidad * (i / 100)).toFixed(2));
+            }
+            const ctx = document.getElementById('graficoResistencia').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Fuerza (N)',
+                        data: datosFuerza,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Deformación (cm)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Fuerza (N)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Calcular la fuerza promedio y la carga total de trabajo
+            const fuerzaPromedio = datosFuerza.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / datosFuerza.length;
+            const cargaTotal = fuerzaPromedio * (distanciaTrabajoCm / 100) * repeticiones;
+
+            document.getElementById('fuerzaPromedio').innerText = fuerzaPromedio.toFixed(2);
+            document.getElementById('cargaTotal').innerText = cargaTotal.toFixed(2);
+        }
     </script>
 </head>
 <body>
-    <h1>Calculo de Elasticidad</h1>
+    <h1>Calculo de Elasticidad y Resistencia</h1>
+
+    <h2>Medición de elasticidad del elástico</h2>
+    <p>Para calcular la elasticidad del elástico, ingrese la distancia de deformación y el peso medido. Luego haga clic en "Calcular".</p>
     <form onsubmit="event.preventDefault(); calcularElasticidad();">
         <label for="distanciaCm">Distancia de deformación (cm):</label>
         <input type="number" id="distanciaCm" required>
@@ -49,10 +107,12 @@
         <br>
         <button type="submit">Calcular</button>
     </form>
+
     <h2>Resultados</h2>
     <p>Distancia en metros: <span id="distanciaM"></span></p>
     <p>Peso en Newtons: <span id="pesoN"></span></p>
     <p>Elasticidad (N/m): <span id="elasticidad"></span></p>
+
     <h2>Tabla de Homologación</h2>
     <table border="1">
         <thead>
@@ -66,5 +126,27 @@
             <!-- Aquí se insertarán las filas de la tabla -->
         </tbody>
     </table>
+
+    <hr>
+
+    <h2>Cálculo de trabajo en entrenamiento</h2>
+    <p>Ingrese la distancia de trabajo y la cantidad de repeticiones para calcular la fuerza promedio y la carga total de trabajo.</p>
+    <form onsubmit="event.preventDefault(); calcularTrabajo();">
+        <label for="distanciaTrabajoCm">Distancia de trabajo (cm):</label>
+        <input type="number" id="distanciaTrabajoCm" required>
+        <br>
+        <label for="repeticiones">Cantidad de repeticiones:</label>
+        <input type="number" id="repeticiones" required>
+        <br>
+        <button type="submit">Calcular</button>
+    </form>
+
+    <h2>Gráfico de Resistencia por Deformación</h2>
+    <canvas id="graficoResistencia" width="400" height="200"></canvas>
+
+    <h2>Resultados del Trabajo</h2>
+    <p>Fuerza Promedio (N): <span id="fuerzaPromedio"></span></p>
+    <p>Carga Total de Trabajo (N·m): <span id="cargaTotal"></span></p>
+
 </body>
 </html>
