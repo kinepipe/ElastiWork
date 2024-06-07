@@ -50,16 +50,25 @@
             const datosFuerza = [];
             for (let i = 0; i <= distanciaTrabajoCm; i++) {
                 labels.push(`${i} cm`);
-                datosFuerza.push((elasticidad * (i / 100)).toFixed(2));
+                const fuerzaN = elasticidad * (i / 100);
+                datosFuerza.push(fuerzaN.toFixed(2));
             }
+
+            const datosFuerzaTotal = [];
+            for (let r = 0; r < repeticiones; r++) {
+                datosFuerzaTotal.push(...datosFuerza); // Ascenso
+                datosFuerzaTotal.push(...datosFuerza.reverse()); // Descenso
+                datosFuerza.reverse(); // Revertir de nuevo para la siguiente repetición
+            }
+
             const ctx = document.getElementById('graficoResistencia').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: Array.from({ length: datosFuerzaTotal.length }, (_, i) => `${i % (distanciaTrabajoCm * 2 + 1)} cm`),
                     datasets: [{
                         label: 'Fuerza (N)',
-                        data: datosFuerza,
+                        data: datosFuerzaTotal,
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 2,
                         fill: false
@@ -85,11 +94,14 @@
             });
 
             // Calcular la fuerza promedio y la carga total de trabajo
-            const fuerzaPromedio = datosFuerza.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / datosFuerza.length;
-            const cargaTotal = fuerzaPromedio * (distanciaTrabajoCm / 100) * repeticiones;
+            const fuerzaPromedio = datosFuerzaTotal.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / datosFuerzaTotal.length;
+            const cargaTotal = fuerzaPromedio * (distanciaTrabajoCm / 100) * repeticiones * 2; // * 2 por la ida y vuelta
+
+            const pesoEquivalenteKg = fuerzaPromedio / 9.81;
 
             document.getElementById('fuerzaPromedio').innerText = fuerzaPromedio.toFixed(2);
             document.getElementById('cargaTotal').innerText = cargaTotal.toFixed(2);
+            document.getElementById('pesoEquivalente').innerText = pesoEquivalenteKg.toFixed(2);
         }
     </script>
 </head>
@@ -147,6 +159,8 @@
     <h2>Resultados del Trabajo</h2>
     <p>Fuerza Promedio (N): <span id="fuerzaPromedio"></span></p>
     <p>Carga Total de Trabajo (N·m): <span id="cargaTotal"></span></p>
+    <p>Fue como trabajar en promedio con una pesa de <span id="pesoEquivalente"></span> kilos</p>
 
 </body>
 </html>
+
